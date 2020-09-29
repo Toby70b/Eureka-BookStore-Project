@@ -1,0 +1,43 @@
+version: '3.3'
+services:
+    mysql:
+        image: tobypeel/bookstoredb
+        restart: always
+        environment:
+            MYSQL_DATABASE: 'db'
+            MYSQL_USER: 'user'
+            MYSQL_PASSWORD: 'password'
+            MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+          - 3306:3306
+        expose:
+          - 3306
+        volumes:
+          - my-db:/var/lib/mysql
+          
+    discovery:
+        image: tobypeel/microservice-eureka-server
+        depends_on:
+            - mysql
+        ports:
+          - 8761:8761      
+          
+    author-service:
+        image: tobypeel/microservice-author-service
+        environment:
+            - EUREKA_SERVER=http://discovery:8761/eureka
+        depends_on:
+          - discovery
+        ports:
+           - 8080:8080
+      
+    book-service:
+        image: tobypeel/microservice-book-service
+        environment:
+            - EUREKA_SERVER=http://discovery:8761/eureka
+        depends_on:
+          - discovery
+        ports:
+          - 8081:8081
+volumes:
+  my-db:
