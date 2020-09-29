@@ -5,9 +5,11 @@ import com.example.bookstore.models.Book;
 import com.example.bookstore.repositories.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,9 @@ public class BookService {
     @LoadBalanced
     RestTemplate restTemplate;
 
+    @Value("${author.service.name}")
+    private String authorServiceName;
+
     private final BookRepository bookRepository;
 
     public void createNewBook(Book book) {
@@ -36,7 +41,7 @@ public class BookService {
             book = optional.get();
         }
         HttpEntity<AuthorDetails> authorDetailsResponseEntity = restTemplate.exchange(
-                "http://author-service/api/author/"+book.getAuthorId(),
+                "http://"+authorServiceName+"/api/author/"+book.getAuthorId(),
                 HttpMethod.GET,
                 null,
                 AuthorDetails.class);
